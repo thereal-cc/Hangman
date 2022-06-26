@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <time.h>
+#include <SDL2/SDL.h>
 
 // Hangman Words
 #include "hangman.hpp"
@@ -37,7 +38,20 @@ std::string check_letter(std::string word, std::string guess, int length, char l
     return guess;
 }
 
-int check_guess(std::string word, std::string guess, int length, int turns, bool playing) {
+std::string check_wguess(std::string word, std::string wguess, int length) {
+    for (int i = 0; i < length; i++) {
+        char letter = wguess[i];
+        if (word[i] == letter) {
+            wguess[i] = letter;
+        } else {
+            wguess[i] = '_';
+        }
+    }
+
+    return wguess;
+}
+
+int check_guess(std::string word, std::string guess, int length) {
     int correct = 0;
     for (int i = 0; i < length; i++) {
         if (guess[i] == word[i]) {
@@ -66,29 +80,53 @@ int main()
     while (playing) {
         print_guess(guess, guess_length);
         std::cout << turns << " Turns Left!" << std::endl;
-        std::cout << "Enter A Letter (lowercase only)" << std::endl;
+        std::cout << "Guess Letter (l) or Word (w)" << std::endl;
 
-        char letter;
-        std::cin >> letter;
-        guess = check_letter(word, guess, guess_length, letter);
-        int correct = check_guess(word, guess, guess_length, turns, playing);
+        char response;
+        std::cin >> response;
 
-        turns--;
-        
-        if (correct == guess_length) {
-            std::cout << "Congrats! You're Correct! The Word Was: " << word << std::endl;
-            playing = false;
-        } else if (turns == 0) {
-            std::cout << "Sorry, You Ran Out Of Turns. The Correct Answer Was: " << word << std::endl;
-            playing = false;
+        if (response == 'l') {
+            std::cout << "Enter A Letter (lowercase only)" << std::endl;
+
+            char letter;
+            std::cin >> letter;
+            guess = check_letter(word, guess, guess_length, letter);
+            int correct = check_guess(word, guess, guess_length);
+
+            turns--;
+            
+            if (correct == guess_length) {
+                std::cout << "Congrats! You're Correct! The Word Was: " << word << std::endl;
+                playing = false;
+            } else if (turns == 0) {
+                std::cout << "Sorry, You Ran Out Of Turns. The Correct Answer Was: " << word << std::endl;
+                playing = false;
+            }
+
+        } else if (response == 'w') {
+            std::cout << "Enter a word (lowercase only)" << std::endl;
+
+            std::string wguess;
+            std::cin >> wguess;
+
+            if (wguess.length() != guess_length) {
+                std::cout << "Error: Guess is not the same length as Word" << std::endl;
+            } else {
+                guess = check_wguess(word, wguess, guess_length);
+                int correct = check_guess(word, guess, guess_length);
+
+                turns--;
+                
+                if (correct == guess_length) {
+                    std::cout << "Congrats! You're Correct! The Word Was: " << word << std::endl;
+                    playing = false;
+                } else if (turns == 0) {
+                    std::cout << "Sorry, You Ran Out Of Turns. The Correct Answer Was: " << word << std::endl;
+                    playing = false;
+                }
+            }
         }
     }
-   
-    /* Loop Through Array
-    for (int i = 0; i < sizeof(words)/sizeof(std::string); i++) {
-        std::cout << words[i] << std::endl;
-    }
-    */
 
     return 0;
 }
